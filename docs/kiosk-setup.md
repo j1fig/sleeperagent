@@ -19,7 +19,22 @@ Any HTTP status (even `400`) means the host is reachable. A timeout or DNS
 error means `api.pushover.net` must be allow-listed in whatever filter is in
 place.
 
-## 2. Install the config and scripts
+## 2. Run the installer
+
+From the child's account:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/j1fig/sleeperagent/main/install.sh | bash
+```
+
+It does sections 2 to 4 of the manual procedure below: scripts, config,
+desktop icon, GNOME hotkey, power and lock-screen settings, and the root-only
+extras when `sudo` works for this account. Flags: `--reconfigure` to re-enter
+the keys, `--no-system` to skip the sudo steps, `--uninstall` to remove icon,
+hotkey and scripts. Everything below is the manual equivalent, kept for
+non-GNOME desktops and for checking what the installer changed.
+
+### 2a. Manual: config and scripts
 
 As the child's user:
 
@@ -45,7 +60,7 @@ Test while awake, from the child's account:
 ~/.local/bin/cancel.sh            # stop the retries if you are just testing
 ```
 
-## 3. Give the child something to press
+## 3. Manual: give the child something to press
 
 ### A desktop icon
 
@@ -53,13 +68,13 @@ Test while awake, from the child's account:
 mkdir -p ~/Desktop
 sed "s|__HOME__|$HOME|g" desktop/CALL.desktop.example > ~/Desktop/CALL.desktop
 chmod +x ~/Desktop/CALL.desktop
+gio set ~/Desktop/CALL.desktop metadata::trusted true   # GNOME: skips "Allow Launching"
 ```
 
-On GNOME, right-click the icon once and choose **Allow Launching**. Remove
-everything else from the desktop so it is the only thing there. If Parental
-Controls hides it, add it to the allowed apps list in Settings → Parental
-Controls, or use the keyboard shortcut below, which is not subject to the app
-filter.
+Remove everything else from the desktop so it is the only thing there. If
+Parental Controls hides it, add it to the allowed apps list in Settings →
+Parental Controls, or use the keyboard shortcut below, which is not subject
+to the app filter.
 
 ### A keyboard shortcut (recommended, works with the screen blanked)
 
@@ -72,7 +87,7 @@ Put a bright sticker on the key. The routine becomes: wake → press the sticker
 key → stay in bed. If the screen was blanked, the first keypress only wakes the
 screen on some desktops; teach "press it twice".
 
-## 4. Keep the laptop awake and unlocked all night
+## 4. Manual: keep the laptop awake and unlocked all night
 
 Run as the child's user (GNOME):
 
@@ -85,11 +100,13 @@ gsettings set org.gnome.desktop.screensaver lock-enabled false
 gsettings set org.gnome.desktop.session idle-delay 300   # blank after 5 min, fine
 ```
 
-As admin, stop the lid from suspending in case it gets closed:
+As admin, stop the lid from suspending and mask suspend entirely:
 
 ```sh
-sudo sed -i 's/^#\?HandleLidSwitch=.*/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
-sudo systemctl restart systemd-logind
+sudo mkdir -p /etc/systemd/logind.conf.d
+printf '[Login]\nHandleLidSwitch=ignore\nHandleLidSwitchExternalPower=ignore\n' | sudo tee /etc/systemd/logind.conf.d/sleeperagent.conf
+sudo systemctl kill -s HUP systemd-logind
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 ```
 
 Enable auto-login for the child's account (Settings → Users → Automatic Login)
@@ -99,7 +116,7 @@ Keep the laptop plugged in. Mute its speakers: the laptop must never make a
 sound at night.
 
 ```sh
-amixer -q set Master mute 2>/dev/null || true
+pactl set-sink-mute @DEFAULT_SINK@ 1 || amixer -q set Master mute
 ```
 
 ## 5. Phase 1: run the kiosk as a service

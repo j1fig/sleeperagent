@@ -59,24 +59,38 @@ Planning and Phase 0. See [docs/roadmap.md](docs/roadmap.md).
 ## Quick start (Phase 0, works today)
 
 Prerequisites: a [Pushover](https://pushover.net) account, the Pushover app on
-the parent's phone, and an application token created at pushover.net/apps.
+the parent's phone, and a dedicated application token created at
+pushover.net/apps.
+
+Log into the child's account on the laptop, open a terminal, and run:
 
 ```sh
-# on the child's Linux machine
-git clone https://github.com/j1fig/sleeperagent
-cd sleeperagent
-mkdir -p ~/.config/sleeperagent
-cp config.example ~/.config/sleeperagent/config
-chmod 600 ~/.config/sleeperagent/config
-$EDITOR ~/.config/sleeperagent/config   # fill in token, user key, device name
-./scripts/call.sh --practice             # normal-priority test message
-./scripts/call.sh                        # real emergency-priority call
+curl -fsSL https://raw.githubusercontent.com/j1fig/sleeperagent/main/install.sh | bash
 ```
 
-Then wire the script to something the child can press without a terminal:
-a desktop icon (`desktop/CALL.desktop.example`) or a keyboard shortcut. Full
-instructions, including power and lock-screen settings so the laptop is still
-usable at 3 a.m., are in [docs/kiosk-setup.md](docs/kiosk-setup.md).
+The installer asks for the token, user key, and the phone's device name,
+validates them with Pushover, and then:
+
+- installs `call.sh`, `status.sh`, `cancel.sh` into `~/.local/bin`
+- writes `~/.config/sleeperagent/config` (mode 600)
+- puts a big **CALL** icon on the desktop and binds **F12** to it (GNOME)
+- turns off automatic suspend and the lock screen
+- with sudo: ignores the lid switch, masks suspend, enables auto-login
+- mutes the speakers and sends a practice message to the phone
+
+Non-interactive form, handy when typing on the laptop is awkward:
+
+```sh
+PUSHOVER_TOKEN=... PUSHOVER_USER=... PUSHOVER_DEVICE=... PARENT_NAME=... \
+  curl -fsSL https://raw.githubusercontent.com/j1fig/sleeperagent/main/install.sh | bash
+```
+
+Flags after `bash -s --`: `--reconfigure`, `--no-system`, `--uninstall`.
+Set `SLEEPERAGENT_KEY` to use a key other than F12.
+
+What the installer cannot do for you: enable **Critical Alerts** in the
+Pushover app on the phone, and do one real night-time test. Both are on the
+checklist in [docs/kiosk-setup.md](docs/kiosk-setup.md).
 
 ## Documents
 
