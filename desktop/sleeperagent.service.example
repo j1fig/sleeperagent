@@ -1,0 +1,16 @@
+# Phase 1 kiosk service. Install to ~/.config/systemd/user/sleeperagent.service
+# after replacing __HOME__ (see docs/kiosk-setup.md).
+[Unit]
+Description=sleeperagent night-time call button kiosk
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 __HOME__/.local/lib/sleeperagent.pyz run
+Restart=always
+RestartSec=2
+Environment=SLEEPERAGENT_CONFIG=__HOME__/.config/sleeperagent/config
+
+[Install]
+WantedBy=graphical-session.target

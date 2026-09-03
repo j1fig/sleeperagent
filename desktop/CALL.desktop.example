@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=CALL
+Comment=Press if you wake up and need a parent. Then stay in bed.
+Exec=__HOME__/.local/bin/call.sh
+Icon=call-start
+Terminal=false
+Categories=Utility;
