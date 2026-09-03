@@ -1,0 +1,16 @@
+# secrets and local state are never committed
+config
+*.env
+.env
+*.log
+*.jsonl
+last-receipt
+
+# python
+__pycache__/
+*.pyc
+*.pyz
+.pytest_cache/
+.venv/
+dist/
+build/
